@@ -1,0 +1,37 @@
+cmake_minimum_required(VERSION 3.16)
+project(qt_engine)
+
+set(CMAKE_CXX_STANDARD 14)
+
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(Qt5_DIR C:\\Qt\\5.14.2\\msvc2017_64\\lib\\cmake\\Qt5)
+
+set(CMAKE_AUTOUIC ON)
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+find_package(Qt5 COMPONENTS Widgets REQUIRED)
+
+add_executable(qt_engine
+        camera.cpp
+        camera.h
+        entity.cpp
+        entity.h
+        main.cpp
+        material.cpp
+        material.h
+        mesh.cpp
+        mesh.h
+        openglwidget.cpp
+        openglwidget.h)
+
+include_directories(includes)
+
+find_library(Assimp assimp-vc142-mt lib)
+
+target_link_libraries(qt_engine LINK_PUBLIC ${Assimp})
+target_link_libraries(qt_engine PRIVATE Qt5::Widgets)
