@@ -44,7 +44,7 @@ void OpenGLWidget::initializeGL() {
 
     QTimer *timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(update()));
-    timer->start(0);
+    timer->start(1000 / 60);
     emit fpsUpdated(0);
 }
 
@@ -125,17 +125,16 @@ void OpenGLWidget::paintGL() {
     shaderProgram.setUniformValue(shaderProgram.uniformLocation("view"), camera.getViewMatrix());
 
 
-    for (int i = 0; i < entities.size(); i++) {
-        Entity* entity = entities[i];
+    for (auto & entity : entities) {
         QMatrix4x4 model;
         model.translate(entity->getPosition());
         model.scale({4.0f, 4.0f, 4.0f});
 //    model.rotate(angle, {0.f, 1.f, 0.f});
 //    angle += 10 * elapsedTime;
         shaderProgram.setUniformValue(shaderProgram.uniformLocation("model"), model);
-        QVector<Mesh *> meshes = entities[i]->getMeshes();
-        for (int j = 0; j < meshes.size(); j++) {
-            meshes[j]->render(this, &shaderProgram);
+        QVector<Mesh *> meshes = entity->getMeshes();
+        for (auto & mesh : meshes) {
+            mesh->render(this, &shaderProgram);
         }
     }
 
@@ -146,8 +145,8 @@ void OpenGLWidget::mouseMoveEvent(QMouseEvent *event) {
     if (keys[Qt::Key_Alt]) {
         QCursor c = cursor();
 
-        camera.processMouseMovement(mapFromGlobal(c.pos()).x() - width() / 2,
-                                    height() / 2 - mapFromGlobal(c.pos()).y());
+        camera.processMouseMovement(mapFromGlobal(QCursor::pos()).x() - width() / 2,
+                                    height() / 2 - mapFromGlobal(QCursor::pos()).y());
 
         c.setPos(mapToGlobal(QPoint(width() / 2, height() / 2)));
         setCursor(c);
@@ -158,7 +157,7 @@ void OpenGLWidget::keyPressEvent(QKeyEvent *event) {
     if (event->key() == Qt::Key_Alt) {
         QCursor c = cursor();
         c.setShape(Qt::BlankCursor);
-        c.setPos(mapToGlobal(QPoint(width() / 2, height() / 2)));
+        QCursor::setPos(mapToGlobal(QPoint(width() / 2, height() / 2)));
         setCursor(c);
     }
     keys[event->key()] = true;

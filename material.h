@@ -4,13 +4,12 @@
 #include <QOpenGLTexture>
 #include <QVector4D>
 
-class Material
-{
+class Material {
 public:
-    explicit Material(QOpenGLTexture *texture = nullptr,
-             QOpenGLTexture *normalMap = nullptr,
-             const QVector4D &diffuseColor = {1.f, 1.f, 1.f, 1.f},
-             const QVector4D &specularColor = {1.f, 1.f, 1.f, 1.f});
+    explicit Material(QString *texturePath = nullptr,
+                      QString *normalMapPath = nullptr,
+                      const QVector4D &diffuseColor = {1.f, 1.f, 1.f, 1.f},
+                      const QVector4D &specularColor = {1.f, 1.f, 1.f, 1.f});
 
     float getReflectance() const;
 
@@ -31,8 +30,8 @@ private:
 
     float reflectance{};
 
-    QOpenGLTexture* texture;
-    QOpenGLTexture* normalMap;
+    QOpenGLTexture *texture;
+    QOpenGLTexture *normalMap;
 
 };
 
