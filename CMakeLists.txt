@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 14)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-set(Qt5_DIR C:\\Qt\\5.14.2\\msvc2017_64\\lib\\cmake\\Qt5)
+set(Qt5_DIR C:\\Qt\\5.15.0\\msvc2019_64\\lib\\cmake\\Qt5)
 
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
@@ -53,3 +53,8 @@ find_library(LinearMath
 
 target_link_libraries(qt_engine LINK_PUBLIC ${Assimp})
 target_link_libraries(qt_engine PRIVATE Qt5::Widgets ${Bullet3Common} ${BulletCollision} ${BulletDynamics} ${BulletInverseDynamics} ${BulletSoftBody} ${LinearMath})
+
+add_custom_command(TARGET qt_engine POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${PROJECT_SOURCE_DIR}/dll"
+        $<TARGET_FILE_DIR:qt_engine>)
