@@ -7,14 +7,14 @@ Mesh::Mesh(const QVector<QVector3D> &positions,
            const QVector<QVector3D> &normals,
            const QVector<unsigned int> &indices,
            const Material &material)
-    : vao()
-    , positionBuffer(QOpenGLBuffer::Type::VertexBuffer)
-    , uvBuffer(QOpenGLBuffer::Type::VertexBuffer)
-    , normalBuffer(QOpenGLBuffer::Type::VertexBuffer)
-    , elementBuffer(QOpenGLBuffer::Type::IndexBuffer)
-    , material(material)
-{
+        : vao(), positionBuffer(QOpenGLBuffer::Type::VertexBuffer), uvBuffer(QOpenGLBuffer::Type::VertexBuffer),
+          normalBuffer(QOpenGLBuffer::Type::VertexBuffer), elementBuffer(QOpenGLBuffer::Type::IndexBuffer),
+          material(material) {
     vertexCount = indices.size();
+
+    this->positions = positions;
+    this->indices = indices;
+
     vao.create();
     vao.bind();
 
@@ -46,12 +46,13 @@ Mesh::Mesh(const QVector<QVector3D> &positions,
     vao.release();
 }
 
-void Mesh::render(QOpenGLFunctions* functions, QOpenGLShaderProgram* shaderProgram)
-{
+void Mesh::render(QOpenGLFunctions *functions, QOpenGLShaderProgram *shaderProgram) {
     if (material.hasTexture()) {
         material.getTexture()->bind(GL_TEXTURE0);
     }
-    shaderProgram->setUniformValue(shaderProgram->uniformLocation("myTextureSampler"), 0);
+    shaderProgram->setUniformValue(shaderProgram->uniformLocation("material.textureSampler"), 0);
+    shaderProgram->setUniformValue(shaderProgram->uniformLocation("hasTexture"), material.hasTexture());
+//    shaderProgram->setUniformValue(shaderProgram->uniformLocation("material.diffuse"), material.getDiffuseColor());
 
     shaderProgram->enableAttributeArray(shaderProgram->attributeLocation("aPos"));
     positionBuffer.bind();
@@ -64,19 +65,42 @@ void Mesh::render(QOpenGLFunctions* functions, QOpenGLShaderProgram* shaderProgr
     shaderProgram->enableAttributeArray(shaderProgram->attributeLocation("aNormal"));
     normalBuffer.bind();
     shaderProgram->setAttributeBuffer(shaderProgram->attributeLocation("aNormal"), GL_FLOAT, 0, 3);
+        elementBuffer.bind();
 
-    elementBuffer.bind();
-
-    functions->glDrawElements(
+        functions->glDrawElements(
                 GL_TRIANGLES,
                 vertexCount,
                 GL_UNSIGNED_INT,
-                (void*)0
-                );
+                (void *) 0
+        );
 
     shaderProgram->disableAttributeArray(shaderProgram->uniformLocation("vertexPosition_modelspace"));
     shaderProgram->disableAttributeArray(shaderProgram->uniformLocation("vertexUV"));
     shaderProgram->disableAttributeArray(shaderProgram->uniformLocation("vertexNormal_modelspace"));
+
+    if (material.hasTexture()) {
+        material.getTexture()->release();
+    }
+}
+
+const QVector<QVector3D> &Mesh::getPositions() const {
+    return positions;
+}
+
+int Mesh::getVertexCount() const {
+    return vertexCount;
+}
+
+const QVector<unsigned int> & Mesh::getIndices() const{
+    return indices;
+}
+
+const Material &Mesh::getMaterial() const {
+    return material;
+}
+
+void Mesh::setMaterial(const Material &material) {
+    Mesh::material = material;
 }
 
 

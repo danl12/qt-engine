@@ -1,11 +1,15 @@
 #include "openglwidget.h"
 
 #include <QApplication>
-#include <includes/assimp/scene.h>
-#include <includes/assimp/Importer.hpp>
-#include <includes/assimp/postprocess.h>
+#include <assimp/scene.h>
+#include <assimp/Importer.hpp>
+#include <assimp/postprocess.h>
 
-QVector<Mesh *> loadModel(const QString &modelPath, QString *texturePath = nullptr) {
+#include <bullet/LinearMath/btTransform.h>
+#include <iostream>
+#include "bullet/LinearMath/btVector3.h"
+
+QVector<Mesh *> loadModel(const QString &modelPath, QString texturePath = "", btConvexHullShape* shape = nullptr) {
     static Assimp::Importer importer;
     const aiScene *scene = importer.ReadFile(modelPath.toStdString(),
                                              aiProcessPreset_TargetRealtime_Quality | aiProcess_FlipUVs);
@@ -25,7 +29,10 @@ QVector<Mesh *> loadModel(const QString &modelPath, QString *texturePath = nullp
                     aiVector3D uv = mesh->mTextureCoords[0][j];
                     uvs.push_back({uv.x, uv.y});
                 }
-
+                if (shape != nullptr) {
+                    btVector3 point(vertex.x, vertex.y,vertex.z);
+                    shape->addPoint(point);
+                }
                 if (mesh->mNormals != nullptr) {
                     aiVector3D normal = mesh->mNormals[j];
                     normals.push_back({normal.x, normal.y, normal.z});
@@ -38,14 +45,14 @@ QVector<Mesh *> loadModel(const QString &modelPath, QString *texturePath = nullp
                 indices.push_back(face.mIndices[2]);
             }
 
-            if (texturePath == nullptr) {
+            if (texturePath.isEmpty() || scene->mNumMeshes > 1) {
                 aiMaterial *material = scene->mMaterials[mesh->mMaterialIndex];
 
                 if (material != nullptr) {
                     aiString aiTexturePath;
                     material->GetTexture(aiTextureType_DIFFUSE, 0, &aiTexturePath);
                     if (aiTexturePath.length > 0) {
-                        texturePath = new QString(modelPath.left(modelPath.lastIndexOf("/")) + aiTexturePath.C_Str());
+                        texturePath = modelPath.left(modelPath.lastIndexOf("/") + 1) + aiTexturePath.C_Str();
                     }
                 }
             }
@@ -65,19 +72,30 @@ int main(int argc, char *argv[]) {
     widget.resize(1280, 720);
     widget.show();
 
-    widget.addEntity(new Entity(
-            loadModel("C:/Users/danl/Downloads/cat/cat.obj"),
-            {-1, 0, 50}));
+    auto catShape = new btConvexHullShape();
+    Entity *cat = new Entity(loadModel("C:/Users/danl/Downloads/cat/cat.obj", "C:/Users/danl/Downloads/cat/cat.jpg", catShape));
+    cat->setRotation(QQuaternion::fromEulerAngles(50, 0, 0));
+    cat->setPosition({0, 20, 0});
+    widget.addEntity(cat, catShape, 10.f);
 
-//    OpenGLWidget widget;
+    auto terrainShape = new btConvexHullShape();
+    Entity *terrain = new Entity(loadModel("C:/Users/danl/Downloads/terrain/terrain.obj", "", terrainShape));
+    terrain->setScale(100);
+    widget.addEntity(terrain, terrainShape);
 
-//    JsonObject obj = parseJson("conf.json");
-
-//    for (Entity entity : obj.get("entities").toVector())  {
-//        widget.add(entity);
-//    }
-
-//    widget.show();
+    auto shape = new btConvexHullShape();
+    auto model = loadModel("C:/Users/danl/Documents/untitled.obj", "", shape);
+    for (int k = 0; k < 5; k++)
+    {
+        for (int i = 0; i < 5; i++)
+        {
+            for (int j = 0; j < 5; j++)
+            {
+                Entity *entity = new Entity(model, {1.f * i, 48 + 1.f * k, 1.f * j});
+                widget.addEntity(entity, shape, 50);
+            }
+        }
+    }
 
     return a.exec();
 }

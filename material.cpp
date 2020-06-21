@@ -2,21 +2,21 @@
 
 #include <iostream>
 
-Material::Material(QString* texturePath,
-                   QString* normalMapPath, const QVector4D &diffuseColor, const QVector4D &specularColor)
+Material::Material(const QString &texturePath,
+                   const QString &normalMapPath, const QVector4D &diffuseColor, const QVector4D &specularColor)
 {
     this->diffuseColor = diffuseColor;
     this->specularColor = specularColor;
-    if (texturePath != nullptr) {
-        std::cout << 321;
-        texture = new QOpenGLTexture(QImage(*texturePath));
+    if (!texturePath.isEmpty()) {
+//        std::cout << texturePath->toStdString() << std::endl;
+        texture = new QOpenGLTexture(QImage(texturePath));
         texture->create();
         texture->bind();
     } else {
         texture = nullptr;
     }
-    if (normalMapPath != nullptr) {
-        normalMap = new QOpenGLTexture(QImage(*normalMapPath));
+    if (!normalMapPath.isEmpty()) {
+        normalMap = new QOpenGLTexture(QImage(normalMapPath));
         normalMap->create();
         normalMap->bind();
     } else {

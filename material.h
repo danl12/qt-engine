@@ -6,8 +6,8 @@
 
 class Material {
 public:
-    explicit Material(QString *texturePath = nullptr,
-                      QString *normalMapPath = nullptr,
+    explicit Material(const QString &texturePath = "",
+                      const QString &normalMapPath = "",
                       const QVector4D &diffuseColor = {1.f, 1.f, 1.f, 1.f},
                       const QVector4D &specularColor = {1.f, 1.f, 1.f, 1.f});
 

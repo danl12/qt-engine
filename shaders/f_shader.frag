@@ -26,6 +26,7 @@ in vec3 FragPos;
 in vec3 Normal;
 in vec2 TexCoords;
 
+uniform bool hasTexture;
 uniform vec3 viewPos;
 uniform Material material;
 uniform Light light;
@@ -34,11 +35,18 @@ void main()
 {
     vec4 text = texture2D(material.diffuse, TexCoords).rgba;
 
-    if(text.a < 0.5)
-        discard;
 
     // ambient
-    vec3 ambient = light.ambient * texture(material.diffuse, TexCoords).rgb;
+    vec3 ambient;
+
+    if (hasTexture) {
+        if(text.a < 0.5)
+        discard;
+
+        ambient = light.ambient * texture(material.diffuse, TexCoords).rgb;
+    } else {
+        ambient = light.ambient * vec3(15, 15, 51);
+    }
 
     // diffuse
     vec3 norm = normalize(Normal);
@@ -64,9 +72,9 @@ void main()
     float distance    = length(light.position - FragPos);
     float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));
     ambient  *= attenuation;
-//    diffuse   *= attenuation;
+//    diffuse   *= 2;
     specular *= attenuation;
 
     vec4 result = vec4(ambient, 1.0) + diffuse + vec4(specular, 1.0);
-    FragColor = texture2D(material.diffuse, TexCoords).rgba;
+    FragColor = result;
 }

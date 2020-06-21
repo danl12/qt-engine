@@ -27,11 +27,29 @@ add_executable(qt_engine
         mesh.cpp
         mesh.h
         openglwidget.cpp
-        openglwidget.h)
+        openglwidget.h Physics.cpp Physics.h)
 
 include_directories(includes)
 
 find_library(Assimp assimp-vc142-mt lib)
+find_library(Bullet3Common
+        Bullet3Common
+        lib)
+find_library(BulletCollision
+        BulletCollision
+        lib)
+find_library(BulletDynamics
+        BulletDynamics
+        lib)
+find_library(BulletInverseDynamics
+        BulletInverseDynamics
+        lib)
+find_library(BulletSoftBody
+        BulletSoftBody
+        lib)
+find_library(LinearMath
+        LinearMath
+        lib)
 
 target_link_libraries(qt_engine LINK_PUBLIC ${Assimp})
-target_link_libraries(qt_engine PRIVATE Qt5::Widgets)
+target_link_libraries(qt_engine PRIVATE Qt5::Widgets ${Bullet3Common} ${BulletCollision} ${BulletDynamics} ${BulletInverseDynamics} ${BulletSoftBody} ${LinearMath})

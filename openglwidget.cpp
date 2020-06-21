@@ -12,17 +12,35 @@
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
 
+
+
 OpenGLWidget::OpenGLWidget()
-        : QOpenGLWidget(), camera({0.0f, 0.0f, 55.0f}, {0.0f, 1.0f, 0.0f}), position({0, 0, 5}) {
+        : QOpenGLWidget(), camera({0.0f, 20.0f, 55.0f}, {0.0f, 1.0f, 0.0f}), position({0, 0, 5}) {
     setMouseTracking(true);
     grabKeyboard();
 
     QSurfaceFormat format;
     format.setSwapInterval(0);
     QSurfaceFormat::setDefaultFormat(format);
+//    btBoxShape* groundShape = new btBoxShape(btVector3(btScalar(50.), btScalar(50.), btScalar(50.)));
+//
+//    btTransform groundTransform;
+//    groundTransform.setIdentity();
+//    groundTransform.setOrigin(btVector3(0, -50, 0));
+//
+//    {
+//        btScalar mass(0.);
+//        physics.createRigidBody(mass, groundTransform, groundShape);
+//    }
 }
 
-void OpenGLWidget::addEntity(Entity *entity) {
+void OpenGLWidget::addEntity(Entity *entity, btCollisionShape* shape, float mass) {
+    btTransform startTransform;
+    startTransform.setIdentity();
+    startTransform.setRotation(entity->getBtRotation());
+    startTransform.setOrigin(entity->getBtPosition());
+    shape->setLocalScaling({entity->getScale(), entity->getScale(), entity->getScale()});
+    entity->setRigidBody(physics.createRigidBody(mass, startTransform, shape));
     entities.push_back(entity);
 }
 
@@ -46,6 +64,28 @@ void OpenGLWidget::initializeGL() {
     connect(timer, SIGNAL(timeout()), this, SLOT(update()));
     timer->start(1000 / 60);
     emit fpsUpdated(0);
+    btTransform startTransform;
+    startTransform.setIdentity();
+    startTransform.setOrigin({10, 50, 0});
+//    physics.createRigidBody(0.f, startTransform, new btBoxShape({1, 1, 1}));
+    debugDrawer = new BulletDebugDrawer_DeprecatedOpenGL(context()->versionFunctions<QOpenGLFunctions_2_0>());
+    physics.getWorld()->setDebugDrawer(debugDrawer);
+//    auto shape = new btBoxShape({1, 1, 1});
+//    for (int k = 0; k < 5; k++)
+//    {
+//        for (int i = 0; i < 5; i++)
+//        {
+//            for (int j = 0; j < 5; j++)
+//            {
+//                startTransform.setOrigin(btVector3(
+//                        btScalar(0.2 * i),
+//                        btScalar(48 + .2 * k),
+//                        btScalar(0.2 * j)));
+//
+//                physics.createRigidBody(0.01, startTransform, shape);
+//            }
+//        }
+//    }
 }
 
 void OpenGLWidget::resizeGL(int w, int h) {
@@ -100,14 +140,14 @@ void OpenGLWidget::paintGL() {
 
     shaderProgram.bind();
 
-    shaderProgram.setUniformValue(shaderProgram.uniformLocation("light.position"), 0.f, 30.f, 0.f);
+    shaderProgram.setUniformValue(shaderProgram.uniformLocation("light.position"), 0.f, 20.f, 0.f);
     shaderProgram.setUniformValue(shaderProgram.uniformLocation("light.direction"), 0.f, -1.f, 0.f);
 //    shaderProgram.setUniformValue(shaderProgram.uniformLocation("light.position"), camera.position);
 //    shaderProgram.setUniformValue(shaderProgram.uniformLocation("light.direction"), camera.front);
     shaderProgram.setUniformValue(shaderProgram.uniformLocation("light.cutOff"),
                                   (GLfloat) qCos(qDegreesToRadians(12.5f)));
     shaderProgram.setUniformValue(shaderProgram.uniformLocation("light.outerCutOff"),
-                                  (GLfloat) qCos(qDegreesToRadians(247.5f)));
+                                  (GLfloat) qCos(qDegreesToRadians(47.5f)));
     shaderProgram.setUniformValue(shaderProgram.uniformLocation("viewPos"), camera.position);
 
     shaderProgram.setUniformValue(shaderProgram.uniformLocation("light.ambient"), 0.1f, 0.1f, 0.1f);
@@ -120,25 +160,25 @@ void OpenGLWidget::paintGL() {
     shaderProgram.setUniformValue(shaderProgram.uniformLocation("material.shininess"), 32.0f);
 
     QMatrix4x4 projection;
-    projection.perspective(45.f, (float) width() / height(), 0.1f, 1000.f);
+    projection.perspective(45.f, (float) width() / height(), 0.1f, 10000.f);
     shaderProgram.setUniformValue(shaderProgram.uniformLocation("projection"), projection);
     shaderProgram.setUniformValue(shaderProgram.uniformLocation("view"), camera.getViewMatrix());
 
-
     for (auto & entity : entities) {
-        QMatrix4x4 model;
-        model.translate(entity->getPosition());
-        model.scale({4.0f, 4.0f, 4.0f});
-//    model.rotate(angle, {0.f, 1.f, 0.f});
-//    angle += 10 * elapsedTime;
-        shaderProgram.setUniformValue(shaderProgram.uniformLocation("model"), model);
+        shaderProgram.setUniformValue(shaderProgram.uniformLocation("model"), entity->getModelMatrix());
         QVector<Mesh *> meshes = entity->getMeshes();
+//        if (entity == entities.first()) {
+//            qDebug() << entity->getRigidBody()->getWorldTransform().getOrigin().y();
+//        }
         for (auto & mesh : meshes) {
             mesh->render(this, &shaderProgram);
         }
     }
 
+    physics.getWorld()->stepSimulation(elapsedTime);
     shaderProgram.release();
+    debugDrawer->SetMatrices(camera.getViewMatrix(), projection);
+    physics.getWorld()->debugDrawWorld();
 }
 
 void OpenGLWidget::mouseMoveEvent(QMouseEvent *event) {
