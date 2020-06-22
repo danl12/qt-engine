@@ -73,26 +73,31 @@ int main(int argc, char *argv[]) {
     widget.show();
 
     auto catShape = new btConvexHullShape();
-    Entity *cat = new Entity(loadModel("C:/Users/danl/Downloads/cat/cat.obj", "C:/Users/danl/Downloads/cat/cat.jpg", catShape));
-    cat->setRotation(QQuaternion::fromEulerAngles(50, 0, 0));
-    cat->setPosition({0, 20, 0});
-    widget.addEntity(cat, catShape, 10.f);
+    auto catMeshes = loadModel("C:/Users/danl/Downloads/cat/cat.obj", "C:/Users/danl/Downloads/cat/cat.jpg", catShape);
+    if (!catMeshes.isEmpty()) {
+        Entity *cat = new Entity(catMeshes);
+        cat->setRotation(QQuaternion::fromEulerAngles(50, 0, 0));
+        cat->setPosition({0, 20, 0});
+        widget.addEntity(cat, catShape, .5f);
+    }
 
     auto terrainShape = new btConvexHullShape();
-    Entity *terrain = new Entity(loadModel("C:/Users/danl/Downloads/terrain/terrain.obj", "", terrainShape));
-    terrain->setScale(100);
-    widget.addEntity(terrain, terrainShape);
+    auto terrainMeshes = loadModel("C:/Users/danl/Downloads/terrain.obj", "", terrainShape);
+    if (!terrainMeshes.isEmpty()) {
+        Entity *terrain = new Entity(terrainMeshes);
+        terrain->setScale(100);
+        widget.addEntity(terrain, terrainShape);
+    }
 
     auto shape = new btConvexHullShape();
-    auto model = loadModel("C:/Users/danl/Documents/untitled.obj", "", shape);
-    for (int k = 0; k < 5; k++)
-    {
-        for (int i = 0; i < 5; i++)
-        {
-            for (int j = 0; j < 5; j++)
-            {
-                Entity *entity = new Entity(model, {1.f * i, 48 + 1.f * k, 1.f * j});
-                widget.addEntity(entity, shape, 50);
+    auto model = loadModel("C:/Users/danl/Downloads/cube.obj", "", shape);
+    if (!model.isEmpty()) {
+        for (int k = 0; k < 5; k++) {
+            for (int i = 0; i < 5; i++) {
+                for (int j = 0; j < 5; j++) {
+                    Entity *entity = new Entity(model, {1.f * i, 48 + 1.f * k, 1.f * j});
+                    widget.addEntity(entity, shape, .1f);
+                }
             }
         }
     }

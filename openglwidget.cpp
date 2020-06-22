@@ -140,22 +140,15 @@ void OpenGLWidget::paintGL() {
 
     shaderProgram.bind();
 
-    shaderProgram.setUniformValue(shaderProgram.uniformLocation("light.position"), 0.f, 20.f, 0.f);
+//    shaderProgram.setUniformValue(shaderProgram.uniformLocation("light.position"), 0.f, 20.f, 0.f);
     shaderProgram.setUniformValue(shaderProgram.uniformLocation("light.direction"), 0.f, -1.f, 0.f);
 //    shaderProgram.setUniformValue(shaderProgram.uniformLocation("light.position"), camera.position);
 //    shaderProgram.setUniformValue(shaderProgram.uniformLocation("light.direction"), camera.front);
-    shaderProgram.setUniformValue(shaderProgram.uniformLocation("light.cutOff"),
-                                  (GLfloat) qCos(qDegreesToRadians(12.5f)));
-    shaderProgram.setUniformValue(shaderProgram.uniformLocation("light.outerCutOff"),
-                                  (GLfloat) qCos(qDegreesToRadians(47.5f)));
     shaderProgram.setUniformValue(shaderProgram.uniformLocation("viewPos"), camera.position);
 
-    shaderProgram.setUniformValue(shaderProgram.uniformLocation("light.ambient"), 0.1f, 0.1f, 0.1f);
-    shaderProgram.setUniformValue(shaderProgram.uniformLocation("light.diffuse"), 0.8f, 0.8f, 0.8f);
-    shaderProgram.setUniformValue(shaderProgram.uniformLocation("light.specular"), 1.0f, 1.0f, 1.0f);
-    shaderProgram.setUniformValue(shaderProgram.uniformLocation("light.constant"), 1.0f);
-    shaderProgram.setUniformValue(shaderProgram.uniformLocation("light.linear"), 0.09f);
-    shaderProgram.setUniformValue(shaderProgram.uniformLocation("light.quadratic"), 0.032f);
+    shaderProgram.setUniformValue(shaderProgram.uniformLocation("light.ambient"), 0.2f, 0.2f, 0.2f);
+    shaderProgram.setUniformValue(shaderProgram.uniformLocation("light.diffuse"), 0.5f, 0.5f, 0.5f);
+    shaderProgram.setUniformValue(shaderProgram.uniformLocation("light.specular"), 1.0f, 1.9f, 1.0f);
 
     shaderProgram.setUniformValue(shaderProgram.uniformLocation("material.shininess"), 32.0f);
 
@@ -178,7 +171,7 @@ void OpenGLWidget::paintGL() {
     physics.getWorld()->stepSimulation(elapsedTime);
     shaderProgram.release();
     debugDrawer->SetMatrices(camera.getViewMatrix(), projection);
-    physics.getWorld()->debugDrawWorld();
+//    physics.getWorld()->debugDrawWorld();
 }
 
 void OpenGLWidget::mouseMoveEvent(QMouseEvent *event) {
